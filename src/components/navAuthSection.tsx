@@ -1,7 +1,9 @@
 import { Box, Button, IconButton, Menu, MenuItem } from '@material-ui/core'
 import { AccountCircle } from '@material-ui/icons'
+import { useRouter } from 'next/dist/client/router'
 import React, { Fragment } from 'react'
-import { useMeQuery } from '../generated/graphql'
+import { useLogoutMutation } from '../generated/graphql'
+import { useApolloClient } from "@apollo/client"
 
 interface navAuthSectionProps {
     isAuth:  boolean
@@ -14,10 +16,21 @@ const NavAuthSection: React.FC<navAuthSectionProps> = ({isAuth}) => {
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
+    const router = useRouter()
+    const apolloClient = useApolloClient()
     
     const handleClose = () => {
         setAnchorEl(null);
     };
+
+    const handleLogout = async () => {
+      await logout()
+      await apolloClient.resetStore()
+      handleClose()
+      router.reload()
+    }
+
+    const [logout, {}] = useLogoutMutation()
 
     let body: JSX.Element
 
@@ -30,7 +43,7 @@ const NavAuthSection: React.FC<navAuthSectionProps> = ({isAuth}) => {
                 onClick={handleMenu}
                 color="inherit"
               >
-                <AccountCircle />
+                <AccountCircle color="primary"/>
               </IconButton>
               <Menu
                 id="menu-appbar"
@@ -48,7 +61,7 @@ const NavAuthSection: React.FC<navAuthSectionProps> = ({isAuth}) => {
                 onClose={handleClose}
               >
                 <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </div>
     ): body = (

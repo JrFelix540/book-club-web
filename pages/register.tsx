@@ -39,7 +39,7 @@ interface RegisterFormValues{
 const Register: React.FC = () => {
     const classes = useStyles()
 
-    
+    const [register, {}] = useRegisterUserMutation()
 
     const initialValues: RegisterFormValues = {
         email: "",

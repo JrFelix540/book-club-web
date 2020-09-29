@@ -1,9 +1,8 @@
 import { AppBar, Box, Typography, Avatar, Link, Button, Toolbar, makeStyles, IconButton, Menu, MenuItem } from '@material-ui/core'
-import { AccountCircle } from '@material-ui/icons'
 import BookIcon from '@material-ui/icons/Book'
 import React, { Fragment, useState } from 'react'
+import { isServer } from '../../utils/isServer'
 import { useMeQuery } from '../generated/graphql'
-import theme from '../theme'
 import NavAuthSection from './navAuthSection'
 
 
@@ -29,16 +28,20 @@ const useStyles = makeStyles((theme) => ({
 
 const NavBar: React.FC = () => {
     
-    const {data, loading, error } = useMeQuery()
+    const {data, loading } = useMeQuery({
+        skip: isServer(),
+    })
 
     let authSection: JSX.Element
-    if(!loading && data.me){
-        authSection =  <NavAuthSection isAuth={true}/>
+    if (loading){
         
-    } else if(!loading && !data.me){
+    } else if (!data?.me){
         authSection =  <NavAuthSection isAuth={false} />
-        
+    } else {
+        authSection =  <NavAuthSection isAuth={true}/>
     }
+
+    
     
 
     

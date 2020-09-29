@@ -4,7 +4,7 @@ import React, { Fragment } from 'react'
 import BookIcon from '@material-ui/icons/Book'
 import InputTextField from '../src/components/textField'
 import { formatErrorMessage } from '../utils/formatError'
-import { useLoginMutation } from '../src/generated/graphql'
+import { MeDocument, MeQuery, useLoginMutation } from '../src/generated/graphql'
 import { useRouter } from 'next/dist/client/router'
 import { withApollo } from '../utils/apollo'
 import NextLink from 'next/link'
@@ -65,9 +65,22 @@ const LoginPage: React.FC = () => {
                     <Formik
                     initialValues={initialValues}
                     onSubmit={async (values, { setErrors }) => {
-                        const response = await login({variables: {
-                            userInput: values
-                        }})
+                        const response = await login(
+                            
+                        {
+                            variables: {
+                                userInput: values
+                            },
+                            update: (cache, {data}) => {
+                                cache.writeQuery<MeQuery>({
+                                    query: MeDocument,
+                                    data: {
+                                        __typename: "Query",
+                                        me: data?.login.user
+                                    }
+                                })
+                            }
+                        })
 
                         if(response.data.login.errors){
                             setErrors(formatErrorMessage(response.data.login.errors))
