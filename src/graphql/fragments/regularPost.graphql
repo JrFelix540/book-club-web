@@ -1,0 +1,19 @@
+fragment RegularPost on Post {
+    id
+    title
+    content
+    creator {
+      id
+      username
+    }
+    upvotes {
+      value
+    }
+    community {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+
+}

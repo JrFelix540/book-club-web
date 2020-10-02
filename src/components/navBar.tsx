@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
         marginRight: theme.spacing(1)
     },
     appBar: {
-        background: theme.palette.background.default,
+        background: theme.palette.background.paper,
         borderBottom: `1px solid ${theme.palette.divider}`,
     },
     title: {
@@ -20,6 +20,9 @@ const useStyles = makeStyles((theme) => ({
     },
     link: {
         margin: theme.spacing(1, 1.5),
+    },
+    logo: {
+        textDecoration: "none"
     }
 }))
 
@@ -53,17 +56,22 @@ const NavBar: React.FC = () => {
     const classes = useStyles()
     return (
         <Fragment>
+            <Box position="relative" height="80px">
             <AppBar className={classes.appBar}>
                 <Toolbar>
-                    <Box display="flex" alignItems="center" className={classes.title}>
-                        <Avatar className={classes.avatar}>    
-                            <BookIcon />
-                        </Avatar>
-                        <Typography variant="h6" color="primary">
-                            BookClub
-                        </Typography>
-
+                    <Box className={classes.title}>
+                        <Link href="/" className={classes.logo}>
+                            <Box display="flex" alignItems="center">
+                                <Avatar className={classes.avatar}>    
+                                    <BookIcon />
+                                </Avatar>
+                                <Typography variant="h6" color="primary">
+                                    BookClub
+                                </Typography>
+                            </Box>
+                        </Link>
                     </Box>
+                    
                     <nav>
                         <Link variant="button" color="textPrimary" href="/" className={classes.link}>
                             Top Trending
@@ -79,6 +87,7 @@ const NavBar: React.FC = () => {
                     
                 </Toolbar>
             </AppBar>
+            </Box>
         </Fragment>
     )
 }

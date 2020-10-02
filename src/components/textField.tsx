@@ -27,8 +27,8 @@ const InputTextField: React.FC<InputTextFieldProps> = (props) => {
             label={props.label}
             type={props.type}
             id={field.name}
-            autoComplete="current-password"
             {...field}
+            {...props}
           />
         </Fragment>
     )

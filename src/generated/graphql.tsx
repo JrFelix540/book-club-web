@@ -17,6 +17,20 @@ export type Query = {
   hello: Scalars['String'];
   users: Array<User>;
   me?: Maybe<User>;
+  allCommunities: Array<Community>;
+  community: Community;
+  posts: Array<Post>;
+  post: Post;
+};
+
+
+export type QueryCommunityArgs = {
+  id: Scalars['Float'];
+};
+
+
+export type QueryPostArgs = {
+  id: Scalars['Float'];
 };
 
 export type User = {
@@ -24,6 +38,98 @@ export type User = {
   id: Scalars['Float'];
   username: Scalars['String'];
   email: Scalars['String'];
+  password: Scalars['String'];
+  createdCommunities: Array<Community>;
+  memberCommunities: Array<Community>;
+  reviews: Array<Review>;
+  upvotes: Array<Upvote>;
+  comments: Array<UserComment>;
+  posts: Array<Post>;
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type Community = {
+  __typename?: 'Community';
+  id: Scalars['Float'];
+  name: Scalars['String'];
+  creator: User;
+  posts: Array<Post>;
+  members: Array<User>;
+  favoriteBooks: Array<Book>;
+};
+
+export type Post = {
+  __typename?: 'Post';
+  id: Scalars['Float'];
+  title: Scalars['String'];
+  content: Scalars['String'];
+  creator: User;
+  community: Community;
+  comments: Array<UserComment>;
+  upvotes: Array<Upvote>;
+  voteStatus?: Maybe<Scalars['Int']>;
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+  contentSnippet: Scalars['String'];
+};
+
+export type UserComment = {
+  __typename?: 'UserComment';
+  id: Scalars['Float'];
+  content: Scalars['String'];
+  creator: User;
+  post: Post;
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type Upvote = {
+  __typename?: 'Upvote';
+  id: Scalars['Float'];
+  value: Scalars['Int'];
+  post: Post;
+  creator: User;
+};
+
+export type Book = {
+  __typename?: 'Book';
+  id: Scalars['Float'];
+  title: Scalars['String'];
+  authors: Array<Author>;
+  genres: Array<Book>;
+  shelf: Shelf;
+  reviews: Array<Review>;
+  favoritedCommunities: Array<Community>;
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type Author = {
+  __typename?: 'Author';
+  id: Scalars['Float'];
+  firstName: Scalars['String'];
+  lastName: Scalars['String'];
+  books: Array<Book>;
+  createdAt: Scalars['String'];
+};
+
+export type Shelf = {
+  __typename?: 'Shelf';
+  id: Scalars['Float'];
+  type: Scalars['String'];
+  books: Array<Book>;
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type Review = {
+  __typename?: 'Review';
+  id: Scalars['Float'];
+  content: Scalars['String'];
+  value: Scalars['Float'];
+  creator: User;
+  book: Book;
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
 };
@@ -35,6 +141,13 @@ export type Mutation = {
   logout: Scalars['Boolean'];
   forgotPassword: Scalars['Boolean'];
   resetPassword: UserResponse;
+  deleteUsers: Scalars['Boolean'];
+  createCommunity: CommunityResponse;
+  joinCommunity: BooleanFieldResponse;
+  deleteAllCommunities: Scalars['Boolean'];
+  createPost: PostResponse;
+  updatePost: PostResponse;
+  createComment: UserCommentResponse;
 };
 
 
@@ -56,6 +169,36 @@ export type MutationForgotPasswordArgs = {
 export type MutationResetPasswordArgs = {
   password: Scalars['String'];
   token: Scalars['String'];
+};
+
+
+export type MutationCreateCommunityArgs = {
+  title: Scalars['String'];
+};
+
+
+export type MutationJoinCommunityArgs = {
+  id: Scalars['Int'];
+};
+
+
+export type MutationCreatePostArgs = {
+  communityId: Scalars['Int'];
+  content: Scalars['String'];
+  title: Scalars['String'];
+};
+
+
+export type MutationUpdatePostArgs = {
+  content?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  id: Scalars['Float'];
+};
+
+
+export type MutationCreateCommentArgs = {
+  postId: Scalars['Float'];
+  content: Scalars['String'];
 };
 
 export type UserResponse = {
@@ -81,9 +224,48 @@ export type UserLoginInput = {
   password: Scalars['String'];
 };
 
+export type CommunityResponse = {
+  __typename?: 'CommunityResponse';
+  errors?: Maybe<Array<FieldError>>;
+  community?: Maybe<Community>;
+};
+
+export type BooleanFieldResponse = {
+  __typename?: 'BooleanFieldResponse';
+  errors?: Maybe<Array<FieldError>>;
+  ok?: Maybe<Scalars['Boolean']>;
+};
+
+export type PostResponse = {
+  __typename?: 'PostResponse';
+  post?: Maybe<Post>;
+  errors?: Maybe<FieldError>;
+};
+
+export type UserCommentResponse = {
+  __typename?: 'UserCommentResponse';
+  errors?: Maybe<Array<FieldError>>;
+  comment?: Maybe<UserComment>;
+};
+
 export type RegularErrorFragment = (
   { __typename?: 'FieldError' }
   & Pick<FieldError, 'field' | 'message'>
+);
+
+export type RegularPostFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'content' | 'createdAt' | 'updatedAt'>
+  & { creator: (
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  ), upvotes: Array<(
+    { __typename?: 'Upvote' }
+    & Pick<Upvote, 'value'>
+  )>, community: (
+    { __typename?: 'Community' }
+    & Pick<Community, 'id' | 'name'>
+  ) }
 );
 
 export type RegularUserFragment = (
@@ -102,6 +284,27 @@ export type RegularUserResponseFragment = (
   )>> }
 );
 
+export type CreatePostMutationVariables = Exact<{
+  title: Scalars['String'];
+  content: Scalars['String'];
+  communityId: Scalars['Int'];
+}>;
+
+
+export type CreatePostMutation = (
+  { __typename?: 'Mutation' }
+  & { createPost: (
+    { __typename?: 'PostResponse' }
+    & { errors?: Maybe<(
+      { __typename?: 'FieldError' }
+      & Pick<FieldError, 'field' | 'message'>
+    )>, post?: Maybe<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'id' | 'title' | 'content'>
+    )> }
+  ) }
+);
+
 export type ForgorPasswordMutationVariables = Exact<{
   email: Scalars['String'];
 }>;
@@ -110,6 +313,23 @@ export type ForgorPasswordMutationVariables = Exact<{
 export type ForgorPasswordMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'forgotPassword'>
+);
+
+export type JoinCommunityMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type JoinCommunityMutation = (
+  { __typename?: 'Mutation' }
+  & { joinCommunity: (
+    { __typename?: 'BooleanFieldResponse' }
+    & Pick<BooleanFieldResponse, 'ok'>
+    & { errors?: Maybe<Array<(
+      { __typename?: 'FieldError' }
+      & Pick<FieldError, 'message'>
+    )>> }
+  ) }
 );
 
 export type LoginMutationVariables = Exact<{
@@ -160,6 +380,17 @@ export type ResetPasswordMutation = (
   ) }
 );
 
+export type CommunityWithIdsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CommunityWithIdsQuery = (
+  { __typename?: 'Query' }
+  & { allCommunities: Array<(
+    { __typename?: 'Community' }
+    & Pick<Community, 'id' | 'name'>
+  )> }
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -168,6 +399,27 @@ export type MeQuery = (
   & { me?: Maybe<(
     { __typename?: 'User' }
     & RegularUserFragment
+  )> }
+);
+
+export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PostsQuery = (
+  { __typename?: 'Query' }
+  & { posts: Array<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'title' | 'content' | 'contentSnippet' | 'createdAt' | 'updatedAt'>
+    & { creator: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'username'>
+    ), upvotes: Array<(
+      { __typename?: 'Upvote' }
+      & Pick<Upvote, 'value'>
+    )>, community: (
+      { __typename?: 'Community' }
+      & Pick<Community, 'id' | 'name'>
+    ) }
   )> }
 );
 
@@ -182,6 +434,26 @@ export type UsersQuery = (
   )> }
 );
 
+export const RegularPostFragmentDoc = gql`
+    fragment RegularPost on Post {
+  id
+  title
+  content
+  creator {
+    id
+    username
+  }
+  upvotes {
+    value
+  }
+  community {
+    id
+    name
+  }
+  createdAt
+  updatedAt
+}
+    `;
 export const RegularUserFragmentDoc = gql`
     fragment RegularUser on User {
   id
@@ -208,6 +480,48 @@ export const RegularUserResponseFragmentDoc = gql`
 }
     ${RegularUserFragmentDoc}
 ${RegularErrorFragmentDoc}`;
+export const CreatePostDocument = gql`
+    mutation CreatePost($title: String!, $content: String!, $communityId: Int!) {
+  createPost(title: $title, content: $content, communityId: $communityId) {
+    errors {
+      field
+      message
+    }
+    post {
+      id
+      title
+      content
+    }
+  }
+}
+    `;
+export type CreatePostMutationFn = ApolloReactCommon.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
+
+/**
+ * __useCreatePostMutation__
+ *
+ * To run a mutation, you first call `useCreatePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPostMutation, { data, loading, error }] = useCreatePostMutation({
+ *   variables: {
+ *      title: // value for 'title'
+ *      content: // value for 'content'
+ *      communityId: // value for 'communityId'
+ *   },
+ * });
+ */
+export function useCreatePostMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreatePostMutation, CreatePostMutationVariables>) {
+        return ApolloReactHooks.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument, baseOptions);
+      }
+export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
+export type CreatePostMutationResult = ApolloReactCommon.MutationResult<CreatePostMutation>;
+export type CreatePostMutationOptions = ApolloReactCommon.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
 export const ForgorPasswordDocument = gql`
     mutation ForgorPassword($email: String!) {
   forgotPassword(email: $email)
@@ -238,6 +552,41 @@ export function useForgorPasswordMutation(baseOptions?: ApolloReactHooks.Mutatio
 export type ForgorPasswordMutationHookResult = ReturnType<typeof useForgorPasswordMutation>;
 export type ForgorPasswordMutationResult = ApolloReactCommon.MutationResult<ForgorPasswordMutation>;
 export type ForgorPasswordMutationOptions = ApolloReactCommon.BaseMutationOptions<ForgorPasswordMutation, ForgorPasswordMutationVariables>;
+export const JoinCommunityDocument = gql`
+    mutation JoinCommunity($id: Int!) {
+  joinCommunity(id: $id) {
+    ok
+    errors {
+      message
+    }
+  }
+}
+    `;
+export type JoinCommunityMutationFn = ApolloReactCommon.MutationFunction<JoinCommunityMutation, JoinCommunityMutationVariables>;
+
+/**
+ * __useJoinCommunityMutation__
+ *
+ * To run a mutation, you first call `useJoinCommunityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useJoinCommunityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [joinCommunityMutation, { data, loading, error }] = useJoinCommunityMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useJoinCommunityMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<JoinCommunityMutation, JoinCommunityMutationVariables>) {
+        return ApolloReactHooks.useMutation<JoinCommunityMutation, JoinCommunityMutationVariables>(JoinCommunityDocument, baseOptions);
+      }
+export type JoinCommunityMutationHookResult = ReturnType<typeof useJoinCommunityMutation>;
+export type JoinCommunityMutationResult = ApolloReactCommon.MutationResult<JoinCommunityMutation>;
+export type JoinCommunityMutationOptions = ApolloReactCommon.BaseMutationOptions<JoinCommunityMutation, JoinCommunityMutationVariables>;
 export const LoginDocument = gql`
     mutation Login($userInput: UserLoginInput!) {
   login(userInput: $userInput) {
@@ -364,6 +713,39 @@ export function useResetPasswordMutation(baseOptions?: ApolloReactHooks.Mutation
 export type ResetPasswordMutationHookResult = ReturnType<typeof useResetPasswordMutation>;
 export type ResetPasswordMutationResult = ApolloReactCommon.MutationResult<ResetPasswordMutation>;
 export type ResetPasswordMutationOptions = ApolloReactCommon.BaseMutationOptions<ResetPasswordMutation, ResetPasswordMutationVariables>;
+export const CommunityWithIdsDocument = gql`
+    query CommunityWithIds {
+  allCommunities {
+    id
+    name
+  }
+}
+    `;
+
+/**
+ * __useCommunityWithIdsQuery__
+ *
+ * To run a query within a React component, call `useCommunityWithIdsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCommunityWithIdsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCommunityWithIdsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCommunityWithIdsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<CommunityWithIdsQuery, CommunityWithIdsQueryVariables>) {
+        return ApolloReactHooks.useQuery<CommunityWithIdsQuery, CommunityWithIdsQueryVariables>(CommunityWithIdsDocument, baseOptions);
+      }
+export function useCommunityWithIdsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<CommunityWithIdsQuery, CommunityWithIdsQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<CommunityWithIdsQuery, CommunityWithIdsQueryVariables>(CommunityWithIdsDocument, baseOptions);
+        }
+export type CommunityWithIdsQueryHookResult = ReturnType<typeof useCommunityWithIdsQuery>;
+export type CommunityWithIdsLazyQueryHookResult = ReturnType<typeof useCommunityWithIdsLazyQuery>;
+export type CommunityWithIdsQueryResult = ApolloReactCommon.QueryResult<CommunityWithIdsQuery, CommunityWithIdsQueryVariables>;
 export const MeDocument = gql`
     query Me {
   me {
@@ -396,6 +778,54 @@ export function useMeLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptio
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = ApolloReactCommon.QueryResult<MeQuery, MeQueryVariables>;
+export const PostsDocument = gql`
+    query Posts {
+  posts {
+    id
+    title
+    content
+    creator {
+      id
+      username
+    }
+    upvotes {
+      value
+    }
+    community {
+      id
+      name
+    }
+    contentSnippet
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __usePostsQuery__
+ *
+ * To run a query within a React component, call `usePostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePostsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePostsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<PostsQuery, PostsQueryVariables>) {
+        return ApolloReactHooks.useQuery<PostsQuery, PostsQueryVariables>(PostsDocument, baseOptions);
+      }
+export function usePostsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<PostsQuery, PostsQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<PostsQuery, PostsQueryVariables>(PostsDocument, baseOptions);
+        }
+export type PostsQueryHookResult = ReturnType<typeof usePostsQuery>;
+export type PostsLazyQueryHookResult = ReturnType<typeof usePostsLazyQuery>;
+export type PostsQueryResult = ApolloReactCommon.QueryResult<PostsQuery, PostsQueryVariables>;
 export const UsersDocument = gql`
     query Users {
   users {
