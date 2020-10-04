@@ -5,7 +5,6 @@ import NavBar from '../src/components/navBar'
 import { withApollo } from '../utils/apollo'
 import { useCommunityWithIdsQuery, useCreatePostMutation } from '../src/generated/graphql'
 import InputTextField from '../src/components/textField'
-import ReactQuill from 'react-quill'
 import SelectField from '../src/components/selectField'
 import { useRouter } from 'next/dist/client/router'
 import { formatErrorMessage } from '../utils/formatError'
@@ -70,13 +69,6 @@ const CreatePost: React.FC = () => {
 
                         onSubmit={async (values, {setErrors}) => {
                             console.log(values.communityId)
-                            const errors ={}
-                            if(values.communityId === undefined){
-                                setErrors({
-                                    communityId: 'Please select a community'
-                                })
-                                return
-                            }
 
                             const response = await createPost({
                                 variables: values

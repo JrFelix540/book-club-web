@@ -53,10 +53,14 @@ export type Community = {
   __typename?: 'Community';
   id: Scalars['Float'];
   name: Scalars['String'];
+  description: Scalars['String'];
   creator: User;
+  creatorId: Scalars['Int'];
   posts: Array<Post>;
   members: Array<User>;
+  memberIds: Array<Scalars['Int']>;
   favoriteBooks: Array<Book>;
+  favoriteBookIds: Array<Scalars['Int']>;
 };
 
 export type Post = {
@@ -65,13 +69,17 @@ export type Post = {
   title: Scalars['String'];
   content: Scalars['String'];
   creator: User;
+  creatorId: Scalars['Int'];
   community: Community;
+  communityId: Scalars['Int'];
   comments: Array<UserComment>;
   upvotes: Array<Upvote>;
+  points: Scalars['Int'];
   voteStatus?: Maybe<Scalars['Int']>;
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
   contentSnippet: Scalars['String'];
+  joinStatus: Scalars['Boolean'];
 };
 
 export type UserComment = {
@@ -86,10 +94,11 @@ export type UserComment = {
 
 export type Upvote = {
   __typename?: 'Upvote';
-  id: Scalars['Float'];
   value: Scalars['Int'];
   post: Post;
   creator: User;
+  creatorId: Scalars['Int'];
+  postId: Scalars['Int'];
 };
 
 export type Book = {
@@ -147,7 +156,9 @@ export type Mutation = {
   deleteAllCommunities: Scalars['Boolean'];
   createPost: PostResponse;
   updatePost: PostResponse;
+  deletePosts: Scalars['Boolean'];
   createComment: UserCommentResponse;
+  deleteAllComments: Scalars['Boolean'];
 };
 
 
@@ -173,7 +184,8 @@ export type MutationResetPasswordArgs = {
 
 
 export type MutationCreateCommunityArgs = {
-  title: Scalars['String'];
+  description: Scalars['String'];
+  name: Scalars['String'];
 };
 
 
@@ -255,7 +267,7 @@ export type RegularErrorFragment = (
 
 export type RegularPostFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'title' | 'content' | 'createdAt' | 'updatedAt'>
+  & Pick<Post, 'id' | 'title' | 'content' | 'createdAt' | 'updatedAt' | 'joinStatus' | 'points'>
   & { creator: (
     { __typename?: 'User' }
     & Pick<User, 'id' | 'username'>
@@ -282,6 +294,26 @@ export type RegularUserResponseFragment = (
     { __typename?: 'FieldError' }
     & RegularErrorFragment
   )>> }
+);
+
+export type CreateCommunityMutationVariables = Exact<{
+  name: Scalars['String'];
+  description: Scalars['String'];
+}>;
+
+
+export type CreateCommunityMutation = (
+  { __typename?: 'Mutation' }
+  & { createCommunity: (
+    { __typename?: 'CommunityResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'FieldError' }
+      & Pick<FieldError, 'field' | 'message'>
+    )>>, community?: Maybe<(
+      { __typename?: 'Community' }
+      & Pick<Community, 'id' | 'name' | 'description'>
+    )> }
+  ) }
 );
 
 export type CreatePostMutationVariables = Exact<{
@@ -409,7 +441,7 @@ export type PostsQuery = (
   { __typename?: 'Query' }
   & { posts: Array<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'title' | 'content' | 'contentSnippet' | 'createdAt' | 'updatedAt'>
+    & Pick<Post, 'id' | 'title' | 'content' | 'contentSnippet' | 'createdAt' | 'updatedAt' | 'joinStatus' | 'points'>
     & { creator: (
       { __typename?: 'User' }
       & Pick<User, 'id' | 'username'>
@@ -452,6 +484,8 @@ export const RegularPostFragmentDoc = gql`
   }
   createdAt
   updatedAt
+  joinStatus
+  points
 }
     `;
 export const RegularUserFragmentDoc = gql`
@@ -480,6 +514,47 @@ export const RegularUserResponseFragmentDoc = gql`
 }
     ${RegularUserFragmentDoc}
 ${RegularErrorFragmentDoc}`;
+export const CreateCommunityDocument = gql`
+    mutation CreateCommunity($name: String!, $description: String!) {
+  createCommunity(name: $name, description: $description) {
+    errors {
+      field
+      message
+    }
+    community {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+export type CreateCommunityMutationFn = ApolloReactCommon.MutationFunction<CreateCommunityMutation, CreateCommunityMutationVariables>;
+
+/**
+ * __useCreateCommunityMutation__
+ *
+ * To run a mutation, you first call `useCreateCommunityMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCommunityMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCommunityMutation, { data, loading, error }] = useCreateCommunityMutation({
+ *   variables: {
+ *      name: // value for 'name'
+ *      description: // value for 'description'
+ *   },
+ * });
+ */
+export function useCreateCommunityMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateCommunityMutation, CreateCommunityMutationVariables>) {
+        return ApolloReactHooks.useMutation<CreateCommunityMutation, CreateCommunityMutationVariables>(CreateCommunityDocument, baseOptions);
+      }
+export type CreateCommunityMutationHookResult = ReturnType<typeof useCreateCommunityMutation>;
+export type CreateCommunityMutationResult = ApolloReactCommon.MutationResult<CreateCommunityMutation>;
+export type CreateCommunityMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateCommunityMutation, CreateCommunityMutationVariables>;
 export const CreatePostDocument = gql`
     mutation CreatePost($title: String!, $content: String!, $communityId: Int!) {
   createPost(title: $title, content: $content, communityId: $communityId) {
@@ -798,6 +873,8 @@ export const PostsDocument = gql`
     contentSnippet
     createdAt
     updatedAt
+    joinStatus
+    points
   }
 }
     `;

@@ -15,5 +15,6 @@ fragment RegularPost on Post {
     }
     createdAt
     updatedAt
-
+    joinStatus
+    points
 }

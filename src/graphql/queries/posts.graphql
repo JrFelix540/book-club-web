@@ -17,5 +17,7 @@ query Posts {
     contentSnippet
     createdAt
     updatedAt
+    joinStatus
+    points
   }
 }
